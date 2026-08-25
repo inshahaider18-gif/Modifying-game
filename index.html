@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Neon Racer</title>
+
+<style>
+
+/* ==============================
+   GENERAL
+================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background:
+        radial-gradient(circle at top, #17213b, #05070d 70%);
+    color: white;
+    overflow: hidden;
+}
+
+/* ==============================
+   MAIN GAME
+================================ */
+
+.game-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ==============================
+   HEADER
+================================ */
+
+.header {
+    width: min(1100px, 95%);
+    height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 10px 20px;
+
+    margin-top: 10px;
+
+    background: rgba(255,255,255,0.06);
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    border-radius: 18px;
+
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 900;
+
+    color: #00f7ff;
+
+    text-shadow:
+        0 0 10px #00f7ff,
+        0 0 25px #00f7ff;
+}
+
+.logo span {
+    color: #ff2bd6;
+}
+
+.stats {
+    display: flex;
+    gap: 25px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-title {
+    font-size: 11px;
+    color: #8d94a8;
+    letter-spacing: 2px;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* ==============================
+   GAME AREA
+================================ */
+
+.game {
+    position: relative;
+
+    width: 420px;
+    height: 650px;
+
+    margin-top: 15px;
+
+    overflow: hidden;
+
+    border-radius: 25px;
+
+    background: #161616;
+
+    box-shadow:
+        0 0 30px rgba(0,247,255,0.15),
+        0 0 80px rgba(255,43,214,0.1);
+}
+
+/* ==============================
+   ROAD
+================================ */
+
+.road {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #111 0%,
+            #242424 8%,
+            #333 50%,
+            #242424 92%,
+            #111 100%
+        );
+}
+
+/* Road side lights */
+
+.road::before,
+.road::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    width: 5px;
+    height: 100%;
+
+    background: #00f7ff;
+
+    box-shadow:
+        0 0 15px #00f7ff,
+        0 0 30px #00f7ff;
+}
+
+.road::before {
+    left: 8px;
+}
+
+.road::after {
+    right: 8px;
+}
+
+/* ==============================
+   ROAD LINES
+================================ */
+
+.lane {
+    position: absolute;
+
+    width: 7px;
+    height: 90px;
+
+    background: white;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    border-radius: 5px;
+
+    box-shadow: 0 0 10px white;
+}
+
+/* ==============================
+   PLAYER CAR
+================================ */
+
+.player {
+    position: absolute;
+
+    width: 62px;
+    height: 110px;
+
+    bottom: 40px;
+    left: 179px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff1744,
+            #ff004c,
+            #ff1744
+        );
+
+    border-radius: 18px 18px 12px 12px;
+
+    box-shadow:
+        0 0 15px #ff1744,
+        0 10px 25px rgba(0,0,0,0.8);
+
+    z-index: 5;
+
+    transition: left 0.08s;
+}
+
+/* Windshield */
+
+.player::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 42px;
+    height: 35px;
+
+    top: 15px;
+    left: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #a7f9ff,
+            #126a85
+        );
+
+    border-radius: 8px;
+}
+
+/* Car center */
+
+.player::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 10px;
+    height: 50px;
+
+    left: 26px;
+    top: 52px;
+
+    background: rgba(255,255,255,0.2);
+
+    border-radius: 5px;
+}
+
+/* Wheels */
+
+.wheel {
+    position: absolute;
+
+    width: 10px;
+    height: 30px;
+
+    background: #050505;
+
+    border-radius: 5px;
+
+    z-index: -1;
+}
+
+.wheel.left {
+    left: -6px;
+    top: 25px;
+}
+
+.wheel.right {
+    right: -6px;
+    top: 25px;
+}
+
+/* ==============================
+   ENEMY CARS
+================================ */
+
+.enemy {
+
+    position: absolute;
+
+    width: 62px;
+    height: 110px;
+
+    border-radius: 18px;
+
+    z-index: 4;
+
+    box-shadow:
+        0 0 15px rgba(255,255,255,0.3),
+        0 10px 20px black;
+}
+
+.enemy::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 42px;
+    height: 35px;
+
+    top: 15px;
+    left: 10px;
+
+    background: #1a5368;
+
+    border-radius: 8px;
+}
+
+/* ==============================
+   GAME START SCREEN
+================================ */
+
+.start-screen {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 20;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            rgba(3,5,12,0.85),
+            rgba(3,5,12,0.95)
+        );
+
+    backdrop-filter: blur(8px);
+}
+
+.start-screen h1 {
+
+    font-size: 55px;
+
+    color: #00f7ff;
+
+    text-shadow:
+        0 0 10px #00f7ff,
+        0 0 30px #00f7ff;
+}
+
+.start-screen p {
+
+    color: #aaa;
+
+    margin: 10px 0 25px;
+}
+
+/* ==============================
+   BUTTON
+================================ */
+
+.start-btn {
+
+    padding: 16px 45px;
+
+    border: none;
+
+    border-radius: 50px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #00f7ff,
+            #0077ff
+        );
+
+    color: white;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 20px #00f7ff;
+
+    transition: 0.2s;
+}
+
+.start-btn:hover {
+
+    transform: scale(1.08);
+
+    box-shadow:
+        0 0 35px #00f7ff;
+}
+
+/* ==============================
+   GAME OVER
+================================ */
+
+.game-over {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 30;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    background: rgba(0,0,0,0.85);
+
+    backdrop-filter: blur(10px);
+}
+
+.game-over h2 {
+
+    font-size: 50px;
+
+    color: #ff1744;
+
+    text-shadow:
+        0 0 20px red;
+}
+
+/* ==============================
+   SPEEDOMETER
+================================ */
+
+.speedometer {
+
+    position: absolute;
+
+    bottom: 15px;
+    right: 15px;
+
+    width: 90px;
+    height: 90px;
+
+    border-radius: 50%;
+
+    background: rgba(0,0,0,0.7);
+
+    border: 3px solid #00f7ff;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 10;
+
+    box-shadow:
+        0 0 15px #00f7ff;
+}
+
+.speed-number {
+
+    font-size: 24px;
+
+    font-weight: bold;
+}
+
+.speed-unit {
+
+    font-size: 10px;
+
+    color: #888;
+}
+
+/* ==============================
+   NITRO
+================================ */
+
+.nitro {
+
+    position: absolute;
+
+    bottom: 20px;
+    left: 15px;
+
+    width: 100px;
+
+    z-index: 10;
+}
+
+.nitro-label {
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+}
+
+.nitro-bar {
+
+    width: 100%;
+    height: 10px;
+
+    background: #222;
+
+    border-radius: 10px;
+
+    margin-top: 5px;
+
+    overflow: hidden;
+}
+
+.nitro-fill {
+
+    width: 80%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff2bd6,
+            #00f7ff
+        );
+
+    box-shadow:
+        0 0 10px #00f7ff;
+}
+
+/* ==============================
+   MOBILE CONTROLS
+================================ */
+
+.controls {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 30px;
+
+    margin-top: 10px;
+}
+
+.control-btn {
+
+    width: 70px;
+    height: 50px;
+
+    border: 1px solid #00f7ff;
+
+    border-radius: 15px;
+
+    background: rgba(0,247,255,0.1);
+
+    color: white;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 10px rgba(0,247,255,0.3);
+}
+
+.control-btn:active {
+
+    background: #00f7ff;
+
+    color: black;
+}
+
+/* ==============================
+   RESPONSIVE
+================================ */
+
+@media(max-width:600px) {
+
+    .header {
+        width: 95%;
+    }
+
+    .game {
+
+        width: 95vw;
+
+        height: 70vh;
+
+        max-height: 650px;
+    }
+
+    .stats {
+        gap: 10px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .start-screen h1 {
+        font-size: 40px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="game-wrapper">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+            NEON<span>RACER</span>
+        </div>
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <div class="stat-title">
+                    SCORE
+                </div>
+
+                <div class="stat-value"
+                     id="score">
+                    0
+                </div>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="stat-title">
+                    BEST
+                </div>
+
+                <div class="stat-value"
+                     id="best">
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- GAME -->
+
+    <div class="game" id="game">
+
+        <div class="road" id="road"></div>
+
+
+        <!-- PLAYER -->
+
+        <div class="player"
+             id="player">
+
+            <div class="wheel left"></div>
+            <div class="wheel right"></div>
+
+        </div>
+
+
+        <!-- SPEED -->
+
+        <div class="speedometer">
+
+            <div class="speed-number"
+                 id="speed">
+                120
+            </div>
+
+            <div class="speed-unit">
+                KM/H
+            </div>
+
+        </div>
+
+
+        <!-- NITRO -->
+
+        <div class="nitro">
+
+            <div class="nitro-label">
+                NITRO
+            </div>
+
+            <div class="nitro-bar">
+
+                <div class="nitro-fill"
+                     id="nitro">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- START SCREEN -->
+
+        <div class="start-screen"
+             id="startScreen">
+
+            <h1>
+                NEON RACER
+            </h1>
+
+            <p>
+                Avoid the traffic. Beat your high score.
+            </p>
+
+            <button class="start-btn"
+                    onclick="startGame()">
+
+                START RACE
+
+            </button>
+
+        </div>
+
+
+        <!-- GAME OVER -->
+
+        <div class="game-over"
+             id="gameOver">
+
+            <h2>
+                CRASHED!
+            </h2>
+
+            <p>
+                Score:
+                <span id="finalScore">
+                    0
+                </span>
+            </p>
+
+            <button class="start-btn"
+                    onclick="restartGame()">
+
+                RACE AGAIN
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MOBILE CONTROLS -->
+
+    <div class="controls">
+
+        <button class="control-btn"
+                onclick="moveLeft()">
+
+            ◀
+
+        </button>
+
+        <button class="control-btn"
+                onclick="moveRight()">
+
+            ▶
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================
+   VARIABLES
+===================================== */
+
+const game = document.getElementById("game");
+
+const player =
+document.getElementById("player");
+
+const scoreDisplay =
+document.getElementById("score");
+
+const bestDisplay =
+document.getElementById("best");
+
+const speedDisplay =
+document.getElementById("speed");
+
+const nitroDisplay =
+document.getElementById("nitro");
+
+const startScreen =
+document.getElementById("startScreen");
+
+const gameOver =
+document.getElementById("gameOver");
+
+const finalScore =
+document.getElementById("finalScore");
+
+let playerX = 179;
+
+let score = 0;
+
+let speed = 6;
+
+let gameRunning = false;
+
+let enemies = [];
+
+let lanes = [80, 179, 278];
+
+
+/* =====================================
+   HIGH SCORE
+===================================== */
+
+let bestScore =
+localStorage.getItem("neonBest") || 0;
+
+bestDisplay.innerText = bestScore;
+
+
+/* =====================================
+   ROAD LINES
+===================================== */
+
+let roadLines = [];
+
+for(let i = 0; i < 8; i++){
+
+    let line =
+    document.createElement("div");
+
+    line.className = "lane";
+
+    line.style.top =
+    (i * 100 - 100) + "px";
+
+    game.appendChild(line);
+
+    roadLines.push(line);
+}
+
+
+/* =====================================
+   START GAME
+===================================== */
+
+function startGame(){
+
+    startScreen.style.display = "none";
+
+    gameRunning = true;
+
+    score = 0;
+
+    speed = 6;
+
+    playerX = 179;
+
+    player.style.left =
+    playerX + "px";
+
+    scoreDisplay.innerText = 0;
+
+    gameLoop();
+
+    spawnEnemy();
+
+}
+
+
+/* =====================================
+   PLAYER MOVEMENT
+===================================== */
+
+function moveLeft(){
+
+    if(!gameRunning)
+        return;
+
+    playerX -= 50;
+
+    if(playerX < 25)
+        playerX = 25;
+
+    player.style.left =
+    playerX + "px";
+}
+
+
+function moveRight(){
+
+    if(!gameRunning)
+        return;
+
+    playerX += 50;
+
+    if(playerX > 333)
+        playerX = 333;
+
+    player.style.left =
+    playerX + "px";
+}
+
+
+/* =====================================
+   KEYBOARD
+===================================== */
+
+document.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "ArrowLeft")
+            moveLeft();
+
+        if(e.key === "ArrowRight")
+            moveRight();
+
+    }
+);
+
+
+/* =====================================
+   CREATE ENEMY
+===================================== */
+
+function spawnEnemy(){
+
+    if(!gameRunning)
+        return;
+
+    let enemy =
+    document.createElement("div");
+
+    enemy.className = "enemy";
+
+    let colors = [
+        "#0066ff",
+        "#ffcc00",
+        "#8e44ff",
+        "#00d084",
+        "#ff5722"
+    ];
+
+    enemy.style.background =
+    colors[
+        Math.floor(
+            Math.random() *
+            colors.length
+        )
+    ];
+
+    let lane =
+    lanes[
+        Math.floor(
+            Math.random() *
+            lanes.length
+        )
+    ];
+
+    enemy.style.left =
+    lane + "px";
+
+    enemy.style.top =
+    "-130px";
+
+    game.appendChild(enemy);
+
+    enemies.push(enemy);
+
+    setTimeout(
+        spawnEnemy,
+        Math.max(
+            600,
+            1300 - score * 5
+        )
+    );
+}
+
+
+/* =====================================
+   GAME LOOP
+===================================== */
+
+function gameLoop(){
+
+    if(!gameRunning)
+        return;
+
+    /* Move road */
+
+    roadLines.forEach(
+        function(line){
+
+            let top =
+            parseInt(line.style.top);
+
+            top += speed;
+
+            if(top > 650)
+                top = -90;
+
+            line.style.top =
+            top + "px";
+
+        }
+    );
+
+
+    /* Move enemies */
+
+    enemies.forEach(
+        function(enemy, index){
+
+            let top =
+            parseInt(enemy.style.top);
+
+            top += speed;
+
+            enemy.style.top =
+            top + "px";
+
+
+            /* Collision */
+
+            if(
+                collision(
+                    player,
+                    enemy
+                )
+            ){
+
+                crash();
+
+            }
+
+
+            /* Enemy passed */
+
+            if(top > 700){
+
+                enemy.remove();
+
+                enemies.splice(
+                    index,
+                    1
+                );
+
+                score++;
+
+                scoreDisplay.innerText =
+                score;
+
+                speed =
+                Math.min(
+                    12,
+                    6 + score / 20
+                );
+
+                speedDisplay.innerText =
+                Math.floor(
+                    100 + speed * 15
+                );
+
+            }
+
+        }
+    );
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =====================================
+   COLLISION
+===================================== */
+
+function collision(a,b){
+
+    let A =
+    a.getBoundingClientRect();
+
+    let B =
+    b.getBoundingClientRect();
+
+    return !(
+        A.bottom < B.top ||
+        A.top > B.bottom ||
+        A.right < B.left ||
+        A.left > B.right
+    );
+}
+
+
+/* =====================================
+   CRASH
+===================================== */
+
+function crash(){
+
+    gameRunning = false;
+
+    finalScore.innerText =
+    score;
+
+    gameOver.style.display =
+    "flex";
+
+    if(score > bestScore){
+
+        bestScore = score;
+
+        localStorage.setItem(
+            "neonBest",
+            bestScore
+        );
+
+        bestDisplay.innerText =
+        bestScore;
+    }
+
+}
+
+
+/* =====================================
+   RESTART
+===================================== */
+
+function restartGame(){
+
+    enemies.forEach(
+        enemy => enemy.remove()
+    );
+
+    enemies = [];
+
+    gameOver.style.display =
+    "none";
+
+    startGame();
+
+}
+
+</script>
+
+</body>
+</html>
